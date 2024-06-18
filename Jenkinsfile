@@ -1,17 +1,33 @@
 pipeline {
-    agent none  // This specifies that no global agent will be used
+    agent any
+
+    triggers {
+        pollSCM('* * * * *')  // Polls SCM every minute; adjust as needed for less frequent checks.
+    }
+
     stages {
-        stage('Build') {
-            agent {
-                docker { 
-                    image 'python:3.10' 
-                    args '-v /var/run/docker.sock:/var/run/docker.sock' // This is crucial if you need Docker commands within the Docker agent
-                }
-            }
+        stage('Checkout') {
             steps {
-                sh 'python --version'
-                sh 'docker --version'  // To check if docker command can be run
+                checkout scm  // Checks out source code from the configured SCM repository
             }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'python3 -m unittest test_calculator.py'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'This will always run'
+        }
+        success {
+            echo 'Build was a success!'
+        }
+        failure {
+            echo 'Build failed!'
         }
     }
 }
