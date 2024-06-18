@@ -1,20 +1,33 @@
 pipeline {
     agent any
 
+    // Trigger the build when changes are committed to the repository
     triggers {
-        pollSCM('* * * * *')  // Polls SCM every minute; adjust as needed for less frequent checks.
+        pollSCMR('H/5 * * * *')  // Polls every 5 minutes; adjust as needed
     }
 
     stages {
-        stage('Checkout') {
+        stage('Setup Environment') {
             steps {
-                checkout scm  // Checks out source code from the configured SCM repository
+                script {
+                    // Check if Python3 is installed and install it if not
+                    sh '''
+                    if ! command -v python3 &> /dev/null; then
+                        echo "Installing Python 3..."
+                        sudo apt-get update
+                        sudo apt-get install -y python3
+                        sudo ln -sf /usr/bin/python3 /usr/bin/python
+                    fi
+                    python --version
+                    '''
+                }
             }
         }
 
-        stage('Test') {
+        stage('Run Tests') {
             steps {
-                sh 'python3 -m unittest test_calculator.py'
+                // Run tests using Python
+                sh 'python -m unittest test_calculator.py'
             }
         }
     }
