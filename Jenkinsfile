@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.10'  
-        }
-    }
+    agent any  
 
     triggers {
         pollSCM('H/15 * * * *')  
@@ -11,6 +7,11 @@ pipeline {
 
     stages {
         stage('Run Tests') {
+            agent {
+                docker {
+                    image 'python:3.10'  
+                }
+            }
             steps {
                 sh 'python -m unittest test_calculator.py'  
             }
@@ -19,10 +20,10 @@ pipeline {
 
     post {
         success {
-            echo 'Build succeeded.'
+            echo 'Build succeeded.'  
         }
         failure {
-            echo 'Build failed.'
+            echo 'Build failed.'  
         }
     }
 }
